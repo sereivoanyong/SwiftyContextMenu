@@ -19,4 +19,8 @@ class SeparatorView: UIView {
         layer.path = UIBezierPath(rect: bounds).cgPath
         layer.fillColor = tintColor.cgColor
     }
+
+    override var intrinsicContentSize: CGSize {
+        return CGSize(width: UIView.noIntrinsicMetric, height: 1 / traitCollection.displayScale)
+    }
 }

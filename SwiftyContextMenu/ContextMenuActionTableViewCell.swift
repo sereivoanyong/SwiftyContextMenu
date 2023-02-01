@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ContextMenuActionTableViewCell: UITableViewCell {
+final class ContextMenuActionTableViewCell: UITableViewCell {
     
     private let rightImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
     private let lightSelectedBackgroundView: UIVisualEffectView
@@ -20,8 +20,14 @@ class ContextMenuActionTableViewCell: UITableViewCell {
             separatorView?.style = style
         }
     }
+
+    var isSeparatorHidden: Bool = false {
+        didSet {
+            separatorView?.isHidden = isSeparatorHidden
+        }
+    }
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+    override init(style: CellStyle, reuseIdentifier: String?) {
         let separatorView = SeparatorView(frame: .zero)
         separatorView.alpha = 0.7
         lightSelectedBackgroundView = UIVisualEffectView(effect: UIVibrancyEffect(blurEffect: UIBlurEffect(style: .light)))
@@ -66,18 +72,16 @@ class ContextMenuActionTableViewCell: UITableViewCell {
     }
     
     private func addSeparatorView() {
-        let separatorView = ContextMenuSeparatorView(frame: .zero, style: self.style)
+        let separatorView = ContextMenuSeparatorView(frame: .zero, style: style)
         self.separatorView = separatorView
         separatorView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(separatorView)
         DispatchQueue.main.async {
             NSLayoutConstraint.activate([
-                separatorView.topAnchor.constraint(equalTo: self.contentView.topAnchor),
-                separatorView.heightAnchor.constraint(equalToConstant: 0.33),
-                separatorView.widthAnchor.constraint(equalTo: self.widthAnchor),
-                separatorView.centerXAnchor.constraint(equalTo: self.centerXAnchor)
+                separatorView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+                self.trailingAnchor.constraint(equalTo: separatorView.trailingAnchor),
+                self.bottomAnchor.constraint(equalTo: separatorView.bottomAnchor)
             ])
-            
         }
     }
     

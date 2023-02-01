@@ -72,7 +72,7 @@ public struct ContextMenuAnimation {
     let sourceViewBounceRange: ClosedRange<CGFloat>
     let optionsViewBounceRange: ClosedRange<CGFloat>
         
-    public init(sourceViewBounceRange: ClosedRange<CGFloat> = 0.9...1.15,
+    public init(sourceViewBounceRange: ClosedRange<CGFloat> = 1...1,
                 optionsViewBounceRange: ClosedRange<CGFloat> = 0.05...1) {
         self.sourceViewBounceRange = sourceViewBounceRange
         self.optionsViewBounceRange = optionsViewBounceRange

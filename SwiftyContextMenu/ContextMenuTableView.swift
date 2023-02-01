@@ -7,13 +7,15 @@
 
 import UIKit
 
-class ContextMenuTableView: UITableView {
+final class ContextMenuTableView: UITableView {
 
     init() {
         super.init(frame: .zero, style: .plain)
         separatorInset = .zero
         separatorStyle = .none
         backgroundColor = .clear
+        alwaysBounceHorizontal = false
+        showsHorizontalScrollIndicator = false
     }
 
     required init?(coder: NSCoder) {
@@ -22,9 +24,7 @@ class ContextMenuTableView: UITableView {
 
     override var contentSize: CGSize {
         didSet {
-            guard
-                contentSize != oldValue
-                else { return }
+            guard contentSize != oldValue else { return }
             invalidateIntrinsicContentSize()
             setNeedsLayout()
         }

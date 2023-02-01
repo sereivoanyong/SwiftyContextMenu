@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol ContextMenuViewControllerDelegate: class {
+protocol ContextMenuViewControllerDelegate: AnyObject {
 
     func contextMenuViewControllerDidDismiss(_ contextMenuViewController: ContextMenuViewController)
 }
@@ -17,7 +17,6 @@ class ContextMenuViewController: UIViewController {
     private let contextMenu: ContextMenu
     private weak var delegate: ContextMenuViewControllerDelegate?
 
-    private let blurView: ContextMenuBackgroundBlurView
     private let overlayView = UIView(frame: .zero)
     private let snapshotImageView = UIImageView(frame: .zero)
     private let contextMenuTableView = ContextMenuTableView()
@@ -31,7 +30,6 @@ class ContextMenuViewController: UIViewController {
     init(contextMenu: ContextMenu, delegate: ContextMenuViewControllerDelegate?) {
         self.delegate = delegate
         self.contextMenu = contextMenu
-        self.blurView = ContextMenuBackgroundBlurView(contextMenu.style)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -44,7 +42,6 @@ class ContextMenuViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        addBlurView()
         addBlackOverlay()
         addSnapshotView()
         addContextMenuTableView()
@@ -59,11 +56,6 @@ class ContextMenuViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = .clear
-    }
-
-    private func addBlurView() {
-        blurView.alpha = 0
-        view.fill(with: blurView)
     }
 
     private func addBlackOverlay() {
@@ -135,17 +127,23 @@ class ContextMenuViewController: UIViewController {
     }
 
     private func makeTitleView() -> UIView? {
-        guard
-            let title = contextMenu.title
-            else {
-                return nil
-            }
+        guard let title = contextMenu.title else { return nil }
         let titleLabelContainterView = UIView(frame: .zero)
         titleLabelContainterView.backgroundColor = .clear
         let titleLabel = ContextMenuTitleLabel(frame: .zero, style: contextMenu.style)
         titleLabel.text = title
         titleLabel.sizeToFit()
         titleLabelContainterView.fill(with: titleLabel, insets: UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10))
+
+        let separatorView = ContextMenuSeparatorView(frame: .zero, style: contextMenu.style)
+        separatorView.translatesAutoresizingMaskIntoConstraints = false
+        titleLabelContainterView.addSubview(separatorView)
+
+        NSLayoutConstraint.activate([
+            separatorView.leadingAnchor.constraint(equalTo: titleLabelContainterView.leadingAnchor),
+            titleLabelContainterView.trailingAnchor.constraint(equalTo: separatorView.trailingAnchor),
+            titleLabelContainterView.bottomAnchor.constraint(equalTo: separatorView.bottomAnchor)
+        ])
         
         return titleLabelContainterView
     }
@@ -164,7 +162,6 @@ class ContextMenuViewController: UIViewController {
             withDuration: 0.2,
             animations: {
                 self.overlayView.alpha = 1
-                self.blurView.alpha = 1
                 self.snapshotImageView.transform = self.contextMenu.sourceViewFirstStepTransform
             },
             completion: { _ in
@@ -179,7 +176,7 @@ class ContextMenuViewController: UIViewController {
 
     private func showContextMenu() {
         UIView.animate(
-            withDuration: 0.5,
+            withDuration: 0.4,
             delay: 0.0,
             usingSpringWithDamping: 0.7,
             initialSpringVelocity: 5,
@@ -206,16 +203,17 @@ class ContextMenuViewController: UIViewController {
 
     private func fadeOutAndClose() {
         UIView.animate(
-            withDuration: 0.3,
+            withDuration: 0.2,
             animations: {
-                self.blurView.alpha = 0
+                self.overlayView.alpha = 0
                 self.contextMenuView.alpha = 0
                 self.snapshotImageView.transform = .identity
                 self.contextMenuView.transform = self.contextMenu.optionsViewFirstTransform(isContextMenuUp: self.isContextMenuUp)
             },
             completion: { _ in
                 self.delegate?.contextMenuViewControllerDidDismiss(self)
-            })
+            }
+        )
     }
 
     @objc private func handleDismissGestureRecognizer() {
@@ -232,12 +230,9 @@ extension ContextMenuViewController: UITableViewDataSource, UITableViewDelegate 
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? ContextMenuActionTableViewCell
-            else {
-                return UITableViewCell()
-            }
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! ContextMenuActionTableViewCell
         cell.configure(action: contextMenu.actions[indexPath.row], with: contextMenu.style)
+        cell.isSeparatorHidden = indexPath.row == contextMenu.actions.count - 1
         return cell
     }
 
